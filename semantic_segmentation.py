@@ -4,6 +4,7 @@ from torchvision import transforms
 from torchvision.datasets import VOCSegmentation
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # Load pretrained FCN ResNet50 model with COCO+VOC weights
 model = torchvision.models.segmentation.fcn_resnet50(
@@ -29,14 +30,46 @@ target_transform = transforms.Compose([
 ])
 
 # Download PASCAL VOC 2012 segmentation dataset (validation split)
-dataset = VOCSegmentation(
-    root='./data',
-    year='2012',
-    image_set='val',  # Use validation set
-    download=True,
-    transform=img_transform,
-    target_transform=target_transform
-)
+# Note: If download fails due to network issues, you can manually download from:
+# http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
+# Extract to ./data/VOCdevkit/VOC2012/
+
+# Check if dataset exists
+dataset_path = './data/VOCdevkit/VOC2012'
+if not os.path.exists(dataset_path):
+    print("Dataset not found. Attempting to download...")
+    print("Note: If download fails, please download manually from:")
+    print("http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar")
+    print("Extract to ./data/VOCdevkit/VOC2012/")
+    
+    try:
+        dataset = VOCSegmentation(
+            root='./data',
+            year='2012',
+            image_set='val',
+            download=True,
+            transform=img_transform,
+            target_transform=target_transform
+        )
+    except Exception as e:
+        print(f"\nError downloading dataset: {e}")
+        print("\nPlease download the dataset manually:")
+        print("1. Download from: http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar")
+        print("2. Extract the tar file")
+        print("3. Move the VOCdevkit folder to ./data/")
+        print("4. The structure should be: ./data/VOCdevkit/VOC2012/")
+        exit(1)
+else:
+    # Dataset exists, load without downloading
+    dataset = VOCSegmentation(
+        root='./data',
+        year='2012',
+        image_set='val',
+        download=False,
+        transform=img_transform,
+        target_transform=target_transform
+    )
+    
 print(f"Dataset loaded: {len(dataset)} images")
 
 # Dataset EDA
@@ -77,48 +110,48 @@ def compute_miou(pred, target, num_classes=21):
     
     return np.mean(ious) if ious else 0.0
 
-# Run inference on a few validation images
-num_samples = 4
-mious = []
+# # Run inference on a few validation images
+# num_samples = 4
+# mious = []
 
-fig, axes = plt.subplots(num_samples, 2, figsize=(12, 3 * num_samples))
+# fig, axes = plt.subplots(num_samples, 2, figsize=(12, 3 * num_samples))
 
-for i in range(num_samples):
-    # Get image and ground truth mask
-    img_tensor, target_tensor = dataset[i]
+# for i in range(num_samples):
+#     # Get image and ground truth mask
+#     img_tensor, target_tensor = dataset[i]
     
-    # Add batch dimension: [C, H, W] -> [1, C, H, W]
-    img_batch = img_tensor.unsqueeze(0).to(device)
+#     # Add batch dimension: [C, H, W] -> [1, C, H, W]
+#     img_batch = img_tensor.unsqueeze(0).to(device)
     
-    # Run inference (no gradient computation needed)
-    with torch.no_grad():
-        output = model(img_batch)['out']  # Shape: [1, 21, H, W] (21 class scores per pixel)
+#     # Run inference (no gradient computation needed)
+#     with torch.no_grad():
+#         output = model(img_batch)['out']  # Shape: [1, 21, H, W] (21 class scores per pixel)
     
-    # Get predicted class per pixel: argmax over class dimension
-    pred_mask = output.argmax(1).squeeze(0)  # Shape: [H, W]
+#     # Get predicted class per pixel: argmax over class dimension
+#     pred_mask = output.argmax(1).squeeze(0)  # Shape: [H, W]
     
-    # Compute mIoU
-    target_mask = target_tensor.squeeze(0)  # Shape: [H, W]
-    miou = compute_miou(pred_mask, target_mask)
-    mious.append(miou)
+#     # Compute mIoU
+#     target_mask = target_tensor.squeeze(0)  # Shape: [H, W]
+#     miou = compute_miou(pred_mask, target_mask)
+#     mious.append(miou)
     
-    # Denormalize image for visualization
-    img_display = img_tensor.cpu().numpy().transpose(1, 2, 0)
-    img_display = img_display * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
-    img_display = np.clip(img_display, 0, 1)
+#     # Denormalize image for visualization
+#     img_display = img_tensor.cpu().numpy().transpose(1, 2, 0)
+#     img_display = img_display * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
+#     img_display = np.clip(img_display, 0, 1)
     
-    # Display original image
-    axes[i, 0].imshow(img_display)
-    axes[i, 0].set_title(f"Original Image {i+1}")
-    axes[i, 0].axis('off')
+#     # Display original image
+#     axes[i, 0].imshow(img_display)
+#     axes[i, 0].set_title(f"Original Image {i+1}")
+#     axes[i, 0].axis('off')
     
-    # Display predicted segmentation mask
-    axes[i, 1].imshow(pred_mask.cpu().numpy(), cmap='tab20', vmin=0, vmax=20)
-    axes[i, 1].set_title(f"Predicted Mask (mIoU: {miou:.3f})")
-    axes[i, 1].axis('off')
+#     # Display predicted segmentation mask
+#     axes[i, 1].imshow(pred_mask.cpu().numpy(), cmap='tab20', vmin=0, vmax=20)
+#     axes[i, 1].set_title(f"Predicted Mask (mIoU: {miou:.3f})")
+#     axes[i, 1].axis('off')
 
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
 
-print(f"\nMean mIoU across {num_samples} samples: {np.mean(mious):.3f}")
+# print(f"\nMean mIoU across {num_samples} samples: {np.mean(mious):.3f}")
 
