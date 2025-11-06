@@ -30,45 +30,14 @@ target_transform = transforms.Compose([
 ])
 
 # Download PASCAL VOC 2012 segmentation dataset (validation split)
-# Note: If download fails due to network issues, you can manually download from:
-# http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
-# Extract to ./data/VOCdevkit/VOC2012/
-
-# Check if dataset exists
-dataset_path = './data/VOCdevkit/VOC2012'
-if not os.path.exists(dataset_path):
-    print("Dataset not found. Attempting to download...")
-    print("Note: If download fails, please download manually from:")
-    print("http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar")
-    print("Extract to ./data/VOCdevkit/VOC2012/")
-    
-    try:
-        dataset = VOCSegmentation(
-            root='./data',
-            year='2012',
-            image_set='val',
-            download=True,
-            transform=img_transform,
-            target_transform=target_transform
-        )
-    except Exception as e:
-        print(f"\nError downloading dataset: {e}")
-        print("\nPlease download the dataset manually:")
-        print("1. Download from: http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar")
-        print("2. Extract the tar file")
-        print("3. Move the VOCdevkit folder to ./data/")
-        print("4. The structure should be: ./data/VOCdevkit/VOC2012/")
-        exit(1)
-else:
-    # Dataset exists, load without downloading
-    dataset = VOCSegmentation(
-        root='./data',
-        year='2012',
-        image_set='val',
-        download=False,
-        transform=img_transform,
-        target_transform=target_transform
-    )
+dataset = VOCSegmentation(
+    root='./data',
+    year='2012',
+    image_set='val',
+    download=False,
+    transform=img_transform,
+    target_transform=target_transform
+)
     
 print(f"Dataset loaded: {len(dataset)} images")
 
