@@ -31,7 +31,7 @@ Each is phrased to get high-quality, verifiable code (you can paste them one at 
 Write a minimal, clear PyTorch script that:
 
 1. Loads the pretrained `torchvision.models.segmentation.fcn_resnet50(weights="FCN_ResNet50_Weights.COCO_WITH_VOC_LABELS_V1")`
-2. Downloads and loads the PASCAL VOC 2012 segmentation dataset (`torchvision.datasets.VOCSegmentation`)
+2. Create a dataloader to loads the PASCAL VOC 2012 segmentation dataset located in the data folder
 3. Applies the proper preprocessing (resize, normalization, ToTensor)
 4. Runs the model in evaluation mode on a few validation images
 5. Computes mean Intersection-over-Union (mIoU) across the sample batch
