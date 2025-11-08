@@ -27,6 +27,7 @@ from tqdm import tqdm
 from lightweight_segmentation_model import LightweightSegmentationModel, count_parameters
 from utils_dataset import get_voc_dataloaders
 from utils_metrics import SegmentationMetrics
+import config  # Import global configuration
 
 
 def train_one_epoch(model, train_loader, criterion, optimizer, device, epoch):
@@ -343,11 +344,17 @@ def main(args):
 
 
 if __name__ == '__main__':
+    # Validate paths from config.py
+    print("\nValidating paths from config.py...")
+    if not config.validate_paths():
+        print("[ERROR] Please fix DATA_ROOT in config.py")
+        exit(1)
+    print("[OK] Paths validated!\n")
+    
     parser = argparse.ArgumentParser(description='Train Lightweight Segmentation Model')
     
-    # Data parameters
-    parser.add_argument('--data_root', type=str, 
-                       default='./data/VOC2012_train_val/VOC2012_train_val',
+    # Data parameters (path from config.py, rest are defaults)
+    parser.add_argument('--data_root', type=str, default=config.DATA_ROOT,
                        help='Root directory of VOC dataset')
     parser.add_argument('--train_set', type=str, default='train',
                        choices=['train', 'trainval'],
@@ -380,8 +387,8 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.1,
                        help='Gamma for StepLR (default: 0.1)')
     
-    # Output parameters
-    parser.add_argument('--output_dir', type=str, default='./checkpoints',
+    # Output parameters (path from config.py)
+    parser.add_argument('--output_dir', type=str, default=config.CHECKPOINT_DIR,
                        help='Output directory for checkpoints')
     parser.add_argument('--device', type=str, default='cuda',
                        choices=['cuda', 'cpu'],
