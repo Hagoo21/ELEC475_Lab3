@@ -1,19 +1,3 @@
-"""
-Simple Path Configuration
-==========================
-
-SETUP FOR YOUR OTHER COMPUTER:
-1. Edit DATA_ROOT below (line 22) to point to your dataset
-2. Run: python config.py (to test)
-3. Run: python train.py (to train)
-
-COMMON PATHS:
-  Standard:           DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
-  Absolute (Windows): DATA_ROOT = r'C:\Users\20sr91\ELEC475_Lab3\data\VOC2012_train_val\VOC2012_train_val'
-  Absolute (Linux):   DATA_ROOT = '/home/username/ELEC475_Lab3/data/VOC2012_train_val/VOC2012_train_val'
-
-That's it!
-"""
 
 import os
 
@@ -22,7 +6,7 @@ import os
 # =============================================================================
 
 # Where is your VOC2012 dataset? Update this path:
-DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
+DATA_ROOT = 'C:/Users/20sr91/ELEC475_Lab3/data/VOC2012_train_val/VOC2012_train_val'
 
 # Examples for different computers:
 # DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'  # Standard
