@@ -24,36 +24,8 @@ from tqdm import tqdm
 
 from lightweight_segmentation_model import LightweightSegmentationModel
 from utils_dataset import VOCSegmentationWithJointTransform, denormalize_image
-from utils_metrics import SegmentationMetrics, VOC_CLASSES
-
-
-# VOC color palette for visualization
-VOC_COLORMAP = [
-    [0, 0, 0],  # background
-    [128, 0, 0], [0, 128, 0], [128, 128, 0], [0, 0, 128], [128, 0, 128],
-    [0, 128, 128], [128, 128, 128], [64, 0, 0], [192, 0, 0], [64, 128, 0],
-    [192, 128, 0], [64, 0, 128], [192, 0, 128], [64, 128, 128], [192, 128, 128],
-    [0, 64, 0], [128, 64, 0], [0, 192, 0], [128, 192, 0], [0, 64, 128]
-]
-
-
-def colorize_mask(mask):
-    """
-    Convert class indices to RGB colors.
-    
-    Args:
-        mask (np.ndarray): Mask with class indices [H, W]
-    
-    Returns:
-        np.ndarray: RGB image [H, W, 3]
-    """
-    h, w = mask.shape
-    colored_mask = np.zeros((h, w, 3), dtype=np.uint8)
-    
-    for class_id, color in enumerate(VOC_COLORMAP):
-        colored_mask[mask == class_id] = color
-    
-    return colored_mask
+from utils_metrics import SegmentationMetrics
+from utils_common import VOC_CLASSES, colorize_mask, load_checkpoint as load_checkpoint_common, print_class_iou
 
 
 def visualize_predictions(images, masks, predictions, num_samples=4, save_path=None):
@@ -240,7 +212,7 @@ def evaluate_model(model, val_loader, device, output_dir, save_masks=True,
 
 def load_checkpoint(checkpoint_path, model, device):
     """
-    Load model checkpoint.
+    Load model checkpoint (wrapper for utils_common.load_checkpoint).
     
     Args:
         checkpoint_path (str): Path to checkpoint
@@ -250,15 +222,7 @@ def load_checkpoint(checkpoint_path, model, device):
     Returns:
         dict: Checkpoint data
     """
-    print(f"Loading checkpoint: {checkpoint_path}")
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    
-    model.load_state_dict(checkpoint['model_state_dict'])
-    
-    print(f"  Epoch: {checkpoint.get('epoch', 'N/A')}")
-    print(f"  mIoU:  {checkpoint.get('miou', 'N/A'):.4f}")
-    
-    return checkpoint
+    return load_checkpoint_common(checkpoint_path, model=model, device=device)
 
 
 def main(args):

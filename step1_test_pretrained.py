@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 import os
 from tqdm import tqdm
+from utils_common import VOC_CLASSES, get_voc_colormap_tensor, get_device
 
 
 class VOC2012SegmentationDataset(Dataset):
@@ -145,42 +146,7 @@ def visualize_predictions(images, masks, predictions, num_samples=4):
         predictions: Predicted masks (B, H, W) tensor
         num_samples: Number of samples to display
     """
-    # VOC colormap for visualization
-    def get_voc_colormap():
-        """Get the PASCAL VOC colormap for visualization"""
-        colormap = torch.zeros(256, 3, dtype=torch.uint8)
-        
-        # Define colors for VOC classes (first 21)
-        colors = [
-            [0, 0, 0],        # 0: background
-            [128, 0, 0],      # 1: aeroplane
-            [0, 128, 0],      # 2: bicycle
-            [128, 128, 0],    # 3: bird
-            [0, 0, 128],      # 4: boat
-            [128, 0, 128],    # 5: bottle
-            [0, 128, 128],    # 6: bus
-            [128, 128, 128],  # 7: car
-            [64, 0, 0],       # 8: cat
-            [192, 0, 0],      # 9: chair
-            [64, 128, 0],     # 10: cow
-            [192, 128, 0],    # 11: dining table
-            [64, 0, 128],     # 12: dog
-            [192, 0, 128],    # 13: horse
-            [64, 128, 128],   # 14: motorbike
-            [192, 128, 128],  # 15: person
-            [0, 64, 0],       # 16: potted plant
-            [128, 64, 0],     # 17: sheep
-            [0, 192, 0],      # 18: sofa
-            [128, 192, 0],    # 19: train
-            [0, 64, 128],     # 20: tv/monitor
-        ]
-        
-        for i, color in enumerate(colors):
-            colormap[i] = torch.tensor(color, dtype=torch.uint8)
-        
-        return colormap
-    
-    colormap = get_voc_colormap()
+    colormap = get_voc_colormap_tensor()
     
     num_samples = min(num_samples, images.shape[0])
     fig, axes = plt.subplots(num_samples, 3, figsize=(15, 5 * num_samples))
@@ -222,8 +188,8 @@ def main():
     print("=" * 70)
     
     # Set device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"\nUsing device: {device}")
+    device = get_device('cuda', verbose=True)
+    print()
     
     # =========================================================================
     # 1. Load Pretrained Model
@@ -358,21 +324,16 @@ def main():
     print(f"Results:")
     print(f"{'='*70}")
     print(f"Mean IoU (mIoU): {miou:.4f} ({miou*100:.2f}%)")
-    print(f"\nPer-class IoU:")
     
-    # Class names for PASCAL VOC
-    voc_classes = [
-        'background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
-        'bus', 'car', 'cat', 'chair', 'cow', 'dining table', 'dog',
-        'horse', 'motorbike', 'person', 'potted plant', 'sheep', 'sofa',
-        'train', 'tv/monitor'
-    ]
-    
-    for cls_idx, (cls_name, iou) in enumerate(zip(voc_classes, iou_per_class)):
+    # Print per-class IoU using utility function
+    print("\nPer-class IoU:")
+    print("-" * 60)
+    for cls_idx, (cls_name, iou) in enumerate(zip(VOC_CLASSES, iou_per_class)):
         if not np.isnan(iou):
             print(f"  {cls_idx:2d}. {cls_name:15s}: {iou:.4f} ({iou*100:.2f}%)")
         else:
             print(f"  {cls_idx:2d}. {cls_name:15s}: N/A (not present)")
+    print("-" * 60)
     
     # =========================================================================
     # 5. Visualize Predictions

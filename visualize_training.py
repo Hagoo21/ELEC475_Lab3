@@ -14,21 +14,37 @@ import os
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+from utils_common import load_training_history, find_best_epoch
 
 def plot_training_history(history_path='checkpoints/training_history.pth', output_dir='visualizations'):
     """
     Load and plot training history.
     
     Args:
-        history_path: Path to the training history file
+        history_path: Path to the training history file or checkpoint directory
         output_dir: Directory to save plots
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
     # Load training history
-    print(f"Loading training history from: {history_path}")
-    history = torch.load(history_path, weights_only=False)
+    # If history_path is a directory, try to load from it
+    if os.path.isdir(history_path):
+        checkpoint_dir = history_path
+        history = load_training_history(checkpoint_dir)
+    else:
+        # Otherwise, assume it's a file path
+        print(f"Loading training history from: {history_path}")
+        if os.path.exists(history_path):
+            history = torch.load(history_path, weights_only=False)
+        else:
+            # Try treating parent directory as checkpoint dir
+            checkpoint_dir = os.path.dirname(history_path) or 'checkpoints'
+            history = load_training_history(checkpoint_dir)
+    
+    if history is None:
+        print(f"Error: Could not load training history from {history_path}")
+        return
     
     # Extract metrics
     train_loss = history['train_loss']
@@ -39,8 +55,7 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
     epochs = range(1, len(train_loss) + 1)
     
     # Find best epoch
-    best_epoch = val_miou.index(max(val_miou)) + 1
-    best_miou = max(val_miou)
+    best_epoch, best_miou = find_best_epoch(history)
     
     print(f"Loaded {len(train_loss)} epochs of training data")
     print(f"\n{'='*60}")

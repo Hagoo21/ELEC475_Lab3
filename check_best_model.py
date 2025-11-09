@@ -7,23 +7,34 @@ Usage:
 
 import os
 import torch
+from utils_common import load_training_history, find_best_epoch
 
 def check_best_model(checkpoint_dir='checkpoints'):
     """Check which epoch had the best mIoU."""
     
-    # Try loading from checkpoint_latest.pth first (has best_miou directly)
+    # Load training history
+    history = load_training_history(checkpoint_dir)
+    
+    if history is None:
+        print(f"Error: No training history found in {checkpoint_dir}/")
+        print("Please make sure you've completed training first.")
+        return
+    
+    # Find best epoch
+    best_epoch, best_miou = find_best_epoch(history)
+    
+    if best_epoch is None:
+        print(f"Error: Could not find best epoch in training history.")
+        return
+    
+    # Load checkpoint_latest.pth to get current epoch info
     latest_path = os.path.join(checkpoint_dir, 'checkpoint_latest.pth')
-    history_path = os.path.join(checkpoint_dir, 'training_history.pth')
     
     if os.path.exists(latest_path):
         print(f"Loading from: {latest_path}\n")
         checkpoint = torch.load(latest_path, weights_only=False, map_location=torch.device('cpu'))
         
-        history = checkpoint['history']
         val_miou = history['val_miou']
-        
-        best_epoch = val_miou.index(max(val_miou)) + 1
-        best_miou = max(val_miou)
         
         print("=" * 70)
         print("BEST MODEL INFORMATION")
@@ -48,15 +59,8 @@ def check_best_model(checkpoint_dir='checkpoints'):
         for rank, (miou, epoch) in enumerate(miou_with_epochs[:5], 1):
             print(f"  {rank}. Epoch {epoch:2d}: mIoU = {miou:.4f}")
         print("=" * 70)
-        
-    elif os.path.exists(history_path):
-        print(f"Loading from: {history_path}\n")
-        history = torch.load(history_path, weights_only=False, map_location=torch.device('cpu'))
-        
-        val_miou = history['val_miou']
-        best_epoch = val_miou.index(max(val_miou)) + 1
-        best_miou = max(val_miou)
-        
+    else:
+        # Fallback if no latest checkpoint
         print("=" * 70)
         print("BEST MODEL INFORMATION")
         print("=" * 70)
@@ -64,11 +68,6 @@ def check_best_model(checkpoint_dir='checkpoints'):
         print(f"  Best mIoU:       {best_miou:.4f}")
         print(f"  Checkpoint File: checkpoint_epoch_{best_epoch}_best.pth")
         print("=" * 70)
-        
-    else:
-        print(f"Error: No training history found in {checkpoint_dir}/")
-        print("Please make sure you've completed training first.")
-        return
     
     # Check if best checkpoint exists
     best_checkpoint_path = os.path.join(checkpoint_dir, f'checkpoint_epoch_{best_epoch}_best.pth')

@@ -32,6 +32,7 @@ from tqdm import tqdm
 from lightweight_segmentation_model import LightweightSegmentationModel, count_parameters
 from utils_dataset import get_voc_dataloaders
 from utils_metrics import SegmentationMetrics
+from utils_common import get_device
 import config  # Import global configuration
 
 
@@ -207,11 +208,7 @@ def main(args):
     print()
     
     # Set device
-    device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
-    if device.type == 'cuda':
-        print(f"  GPU: {torch.cuda.get_device_name(0)}")
-        print(f"  Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
+    device = get_device(args.device, verbose=True)
     print()
     
     # Create output directory

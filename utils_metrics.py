@@ -7,6 +7,7 @@ for PASCAL VOC 2012 segmentation.
 
 import torch
 import numpy as np
+from utils_common import VOC_CLASSES, print_class_iou
 
 
 class SegmentationMetrics:
@@ -181,28 +182,7 @@ def compute_metrics_batch(predictions, targets, num_classes=21, ignore_index=255
     }
 
 
-# PASCAL VOC 2012 class names
-VOC_CLASSES = [
-    'background', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
-    'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
-    'dog', 'horse', 'motorbike', 'person', 'pottedplant',
-    'sheep', 'sofa', 'train', 'tvmonitor'
-]
-
-
-def print_class_iou(iou_per_class, class_names=VOC_CLASSES):
-    """
-    Print IoU for each class.
-    
-    Args:
-        iou_per_class (np.ndarray): IoU scores per class
-        class_names (list): List of class names
-    """
-    print("\nPer-class IoU:")
-    print("-" * 40)
-    for i, (name, iou) in enumerate(zip(class_names, iou_per_class)):
-        print(f"  {i:2d}. {name:15s}: {iou:.4f}")
-    print("-" * 40)
+# VOC_CLASSES and print_class_iou are now imported from utils_common
 
 
 if __name__ == "__main__":

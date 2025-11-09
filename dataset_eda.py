@@ -15,64 +15,7 @@ import seaborn as sns
 from collections import Counter, defaultdict
 from tqdm import tqdm
 import pandas as pd
-
-# PASCAL VOC 2012 class names (21 classes including background)
-VOC_CLASSES = [
-    'background',      # 0
-    'aeroplane',       # 1
-    'bicycle',         # 2
-    'bird',            # 3
-    'boat',            # 4
-    'bottle',          # 5
-    'bus',             # 6
-    'car',             # 7
-    'cat',             # 8
-    'chair',           # 9
-    'cow',             # 10
-    'diningtable',     # 11
-    'dog',             # 12
-    'horse',           # 13
-    'motorbike',       # 14
-    'person',          # 15
-    'pottedplant',     # 16
-    'sheep',           # 17
-    'sofa',            # 18
-    'train',           # 19
-    'tvmonitor'        # 20
-]
-
-# Color palette for visualization (Pascal VOC standard)
-VOC_COLORMAP = [
-    [0, 0, 0],         # background
-    [128, 0, 0],       # aeroplane
-    [0, 128, 0],       # bicycle
-    [128, 128, 0],     # bird
-    [0, 0, 128],       # boat
-    [128, 0, 128],     # bottle
-    [0, 128, 128],     # bus
-    [128, 128, 128],   # car
-    [64, 0, 0],        # cat
-    [192, 0, 0],       # chair
-    [64, 128, 0],      # cow
-    [192, 128, 0],     # diningtable
-    [64, 0, 128],      # dog
-    [192, 0, 128],     # horse
-    [64, 128, 128],    # motorbike
-    [192, 128, 128],   # person
-    [0, 64, 0],        # pottedplant
-    [128, 64, 0],      # sheep
-    [0, 192, 0],       # sofa
-    [128, 192, 0],     # train
-    [0, 64, 128]       # tvmonitor
-]
-
-
-def read_split_file(split_file_path):
-    """Read image IDs from a split file."""
-    if not os.path.exists(split_file_path):
-        return []
-    with open(split_file_path, 'r') as f:
-        return [line.strip() for line in f.readlines()]
+from utils_common import VOC_CLASSES, VOC_COLORMAP, read_split_file
 
 
 def count_images_per_partition(data_root):
