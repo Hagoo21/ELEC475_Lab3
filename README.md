@@ -9,7 +9,7 @@ Download the Pascal VOC 2012 dataset manually:
 
 
 
-
+python train.py --epochs 50 --batch_size 48 --image_size 512 --num_workers 0
 
 
 
