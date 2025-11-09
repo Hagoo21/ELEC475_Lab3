@@ -35,7 +35,6 @@ ENV/
 *.pth
 *.pt
 checkpoints/
-models/
 
 # IDE
 .vscode/
