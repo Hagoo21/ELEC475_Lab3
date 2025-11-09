@@ -39,7 +39,12 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
         # Otherwise, assume it's a file path
         print(f"Loading training history from: {history_path}")
         if os.path.exists(history_path):
-            history = torch.load(history_path, weights_only=False)
+            checkpoint = torch.load(history_path, weights_only=False, map_location=torch.device('cpu'))
+            # Check if this is a checkpoint file with nested history or a direct history file
+            if 'history' in checkpoint:
+                history = checkpoint['history']
+            else:
+                history = checkpoint
         else:
             # Try treating parent directory as checkpoint dir
             checkpoint_dir = os.path.dirname(history_path) or 'checkpoints'
@@ -165,13 +170,13 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
 
 
 if __name__ == '__main__':
-    # Check if training history exists (adjust path for scripts folder)
+    # Check if checkpoint_latest.pth exists (adjust path for scripts folder)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    history_path = os.path.join(script_dir, '..', 'checkpoints', 'training_history.pth')
+    history_path = os.path.join(script_dir, '..', 'checkpoints', 'checkpoint_latest.pth')
     
     if not os.path.exists(history_path):
-        print(f"Error: Training history not found at {history_path}")
-        print("Please run training first to generate the history file.")
+        print(f"Error: Checkpoint file not found at {history_path}")
+        print("Please run training first to generate the checkpoint file.")
     else:
         plot_training_history(history_path)
 
