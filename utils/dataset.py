@@ -159,6 +159,53 @@ def joint_transform_train(image, mask, image_size):
     return image, mask
 
 
+def joint_transform_train_enhanced(image, mask, image_size):
+    """
+    ENHANCED joint transforms for training with multi-scale augmentation.
+    
+    Includes:
+    - Random scale (0.5 to 2.0x)
+    - Random crop back to target size
+    - Random horizontal flip
+    
+    This is more aggressive than the standard augmentation and helps
+    the model generalize better, potentially improving mIoU by 2-4%.
+    
+    Args:
+        image (PIL.Image): Input image
+        mask (PIL.Image): Input mask
+        image_size (int): Target size
+    
+    Returns:
+        tuple: Transformed (image, mask)
+    """
+    import random
+    
+    size = (image_size, image_size) if isinstance(image_size, int) else image_size
+    target_h, target_w = size
+    
+    # Random scale between 0.5x and 2.0x
+    scale = random.uniform(0.5, 2.0)
+    scaled_size = int(image_size * scale)
+    
+    image = transforms.functional.resize(image, (scaled_size, scaled_size), 
+                                        interpolation=Image.BILINEAR)
+    mask = transforms.functional.resize(mask, (scaled_size, scaled_size), 
+                                       interpolation=Image.NEAREST)
+    
+    # Random crop to target size
+    i, j, h, w = transforms.RandomCrop.get_params(image, output_size=size)
+    image = transforms.functional.crop(image, i, j, h, w)
+    mask = transforms.functional.crop(mask, i, j, h, w)
+    
+    # Random horizontal flip
+    if torch.rand(1) < 0.5:
+        image = transforms.functional.hflip(image)
+        mask = transforms.functional.hflip(mask)
+    
+    return image, mask
+
+
 def joint_transform_val(image, mask, image_size):
     """
     Joint transforms for validation (resize only).
@@ -179,13 +226,14 @@ def joint_transform_val(image, mask, image_size):
     return image, mask
 
 
-def get_transforms(image_size=512, is_training=True):
+def get_transforms(image_size=512, is_training=True, use_enhanced_aug=False):
     """
     Get transforms for images and masks.
     
     Args:
         image_size (int): Target size for resizing
         is_training (bool): Whether in training mode (enables augmentation)
+        use_enhanced_aug (bool): Use enhanced augmentation (multi-scale + crop)
     
     Returns:
         tuple: (image_transform, mask_transform_fn, joint_transform_fn)
@@ -206,7 +254,10 @@ def get_transforms(image_size=512, is_training=True):
     
     # Joint transforms (applied to both image and mask)
     if is_training:
-        joint_transforms_fn = lambda img, msk: joint_transform_train(img, msk, image_size)
+        if use_enhanced_aug:
+            joint_transforms_fn = lambda img, msk: joint_transform_train_enhanced(img, msk, image_size)
+        else:
+            joint_transforms_fn = lambda img, msk: joint_transform_train(img, msk, image_size)
     else:
         joint_transforms_fn = lambda img, msk: joint_transform_val(img, msk, image_size)
     
@@ -222,9 +273,10 @@ class VOCSegmentationWithJointTransform(Dataset):
         image_set (str): 'train', 'trainval', or 'val'
         image_size (int): Target size for resizing
         is_training (bool): Whether in training mode
+        use_enhanced_aug (bool): Use enhanced augmentation (multi-scale + crop) for training
     """
     
-    def __init__(self, root, image_set='train', image_size=512, is_training=True):
+    def __init__(self, root, image_set='train', image_size=512, is_training=True, use_enhanced_aug=False):
         self.root = root
         self.image_set = image_set
         self.is_training = is_training
@@ -234,7 +286,7 @@ class VOCSegmentationWithJointTransform(Dataset):
         
         # Get transforms
         self.image_transform, self.mask_transform, self.joint_transform = \
-            get_transforms(image_size=image_size, is_training=is_training)
+            get_transforms(image_size=image_size, is_training=is_training, use_enhanced_aug=use_enhanced_aug)
     
     def __len__(self):
         return len(self.voc)
@@ -261,7 +313,7 @@ class VOCSegmentationWithJointTransform(Dataset):
 
 
 def get_voc_dataloaders(data_root, image_size=512, batch_size=8, 
-                        num_workers=4, train_set='train', val_set='val'):
+                        num_workers=4, train_set='train', val_set='val', use_enhanced_aug=False):
     """
     Create DataLoaders for PASCAL VOC 2012 segmentation.
     
@@ -272,6 +324,7 @@ def get_voc_dataloaders(data_root, image_size=512, batch_size=8,
         num_workers (int): Number of worker processes (default: 4)
         train_set (str): Training set name ('train' or 'trainval')
         val_set (str): Validation set name ('val')
+        use_enhanced_aug (bool): Use enhanced augmentation (multi-scale + crop) for training
     
     Returns:
         tuple: (train_loader, val_loader)
@@ -281,7 +334,8 @@ def get_voc_dataloaders(data_root, image_size=512, batch_size=8,
         root=data_root,
         image_set=train_set,
         image_size=image_size,
-        is_training=True
+        is_training=True,
+        use_enhanced_aug=use_enhanced_aug
     )
     
     # Validation dataset
