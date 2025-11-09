@@ -7,7 +7,7 @@ for PASCAL VOC 2012 segmentation.
 
 import torch
 import numpy as np
-from utils_common import VOC_CLASSES, print_class_iou
+from .common import VOC_CLASSES, print_class_iou
 
 
 class SegmentationMetrics:

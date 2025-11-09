@@ -5,6 +5,10 @@ This script loads the pretrained FCN-ResNet50 model and evaluates it on
 the PASCAL VOC 2012 validation dataset, computing mIoU and visualizing results.
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 import torchvision
 from torchvision import transforms
@@ -12,9 +16,8 @@ from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import os
 from tqdm import tqdm
-from utils_common import VOC_CLASSES, get_voc_colormap_tensor, get_device
+from utils.common import VOC_CLASSES, get_voc_colormap_tensor, get_device
 
 
 class VOC2012SegmentationDataset(Dataset):

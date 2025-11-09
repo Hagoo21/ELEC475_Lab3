@@ -22,10 +22,14 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from lightweight_segmentation_model import LightweightSegmentationModel
-from utils_dataset import VOCSegmentationWithJointTransform, denormalize_image
-from utils_metrics import SegmentationMetrics
-from utils_common import VOC_CLASSES, colorize_mask, load_checkpoint as load_checkpoint_common, print_class_iou
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models.lightweight_segmentation import LightweightSegmentationModel
+from utils.dataset import VOCSegmentationWithJointTransform, denormalize_image
+from utils.metrics import SegmentationMetrics
+from utils.common import VOC_CLASSES, colorize_mask, load_checkpoint as load_checkpoint_common, print_class_iou
 
 
 def visualize_predictions(images, masks, predictions, num_samples=4, save_path=None):

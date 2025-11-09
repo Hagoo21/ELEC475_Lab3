@@ -10,11 +10,14 @@ Usage:
     python visualize_training.py
 """
 
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
-from utils_common import load_training_history, find_best_epoch
+from utils.common import load_training_history, find_best_epoch
 
 def plot_training_history(history_path='checkpoints/training_history.pth', output_dir='visualizations'):
     """
@@ -162,8 +165,9 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
 
 
 if __name__ == '__main__':
-    # Check if training history exists
-    history_path = 'checkpoints/training_history.pth'
+    # Check if training history exists (adjust path for scripts folder)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    history_path = os.path.join(script_dir, '..', 'checkpoints', 'training_history.pth')
     
     if not os.path.exists(history_path):
         print(f"Error: Training history not found at {history_path}")

@@ -7,7 +7,10 @@ This script analyzes the dataset to understand:
 - Dataset statistics and visualizations
 """
 
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -15,7 +18,7 @@ import seaborn as sns
 from collections import Counter, defaultdict
 from tqdm import tqdm
 import pandas as pd
-from utils_common import VOC_CLASSES, VOC_COLORMAP, read_split_file
+from utils.common import VOC_CLASSES, VOC_COLORMAP, read_split_file
 
 
 def count_images_per_partition(data_root):

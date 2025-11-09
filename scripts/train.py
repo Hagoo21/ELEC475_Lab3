@@ -29,10 +29,14 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from tqdm import tqdm
 
-from lightweight_segmentation_model import LightweightSegmentationModel, count_parameters
-from utils_dataset import get_voc_dataloaders
-from utils_metrics import SegmentationMetrics
-from utils_common import get_device
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models.lightweight_segmentation import LightweightSegmentationModel, count_parameters
+from utils.dataset import get_voc_dataloaders
+from utils.metrics import SegmentationMetrics
+from utils.common import get_device
 import config  # Import global configuration
 
 

@@ -5,11 +5,14 @@ Usage:
     python check_best_model.py
 """
 
+import sys
 import os
-import torch
-from utils_common import load_training_history, find_best_epoch
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def check_best_model(checkpoint_dir='checkpoints'):
+import torch
+from utils.common import load_training_history, find_best_epoch
+
+def check_best_model(checkpoint_dir='../checkpoints'):
     """Check which epoch had the best mIoU."""
     
     # Load training history
@@ -78,5 +81,8 @@ def check_best_model(checkpoint_dir='checkpoints'):
 
 
 if __name__ == '__main__':
-    check_best_model()
+    # Use absolute path to checkpoints directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    checkpoint_dir = os.path.join(script_dir, '..', 'checkpoints')
+    check_best_model(checkpoint_dir)
 
