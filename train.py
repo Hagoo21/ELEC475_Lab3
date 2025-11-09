@@ -7,9 +7,14 @@ This script implements:
 - Validation with mIoU computation
 - Model checkpointing (saves best model)
 - Learning rate scheduling
+- Resume training from checkpoint
 
 Usage:
+    # Start new training
     python train.py --epochs 50 --batch_size 8 --image_size 512 --lr 1e-4
+    
+    # Resume training from checkpoint
+    python train.py --resume --epochs 100
 """
 
 import os
@@ -198,6 +203,7 @@ def main(args):
     print(f"  Epochs:         {args.epochs}")
     print(f"  Num workers:    {args.num_workers}")
     print(f"  Device:         {args.device}")
+    print(f"  Resume:         {args.resume}")
     print()
     
     # Set device
@@ -261,12 +267,9 @@ def main(args):
         print("No LR scheduler")
     print()
     
-    # Training loop
-    print("=" * 80)
-    print("Starting Training")
-    print("=" * 80)
-    
+    # Initialize training variables
     best_miou = 0.0
+    start_epoch = 1
     training_history = {
         'train_loss': [],
         'val_loss': [],
@@ -274,7 +277,52 @@ def main(args):
         'val_pixel_acc': []
     }
     
-    for epoch in range(1, args.epochs + 1):
+    # Resume from checkpoint if specified
+    if args.resume:
+        checkpoint_path = os.path.join(args.output_dir, 'checkpoint_latest.pth')
+        if os.path.exists(checkpoint_path):
+            print("=" * 80)
+            print("Resuming from checkpoint")
+            print("=" * 80)
+            print(f"Loading checkpoint: {checkpoint_path}")
+            
+            checkpoint = torch.load(checkpoint_path, map_location=device)
+            
+            # Load model state
+            model.load_state_dict(checkpoint['model_state_dict'])
+            
+            # Load optimizer state
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            
+            # Load scheduler state
+            if scheduler and checkpoint['scheduler_state_dict']:
+                scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+            
+            # Load training progress
+            start_epoch = checkpoint['epoch'] + 1
+            best_miou = checkpoint.get('best_miou', checkpoint.get('miou', 0.0))
+            
+            # Load training history if available
+            if 'history' in checkpoint:
+                training_history = checkpoint['history']
+                print(f"  Loaded training history: {len(training_history['train_loss'])} epochs")
+            
+            print(f"  Resuming from epoch: {start_epoch}")
+            print(f"  Best mIoU so far: {best_miou:.4f}")
+            print(f"  Current learning rate: {optimizer.param_groups[0]['lr']:.6f}")
+            print("=" * 80)
+            print()
+        else:
+            print(f"Warning: --resume specified but no checkpoint found at {checkpoint_path}")
+            print("Starting training from scratch...")
+            print()
+    
+    # Training loop
+    print("=" * 80)
+    print("Starting Training")
+    print("=" * 80)
+    
+    for epoch in range(start_epoch, args.epochs + 1):
         print(f"\n{'='*80}")
         print(f"Epoch {epoch}/{args.epochs}")
         print(f"{'='*80}")
@@ -377,6 +425,8 @@ if __name__ == '__main__':
                        help='Learning rate (default: 1e-4)')
     parser.add_argument('--num_workers', type=int, default=4,
                        help='Number of data loading workers (default: 4)')
+    parser.add_argument('--resume', action='store_true',
+                       help='Resume training from checkpoint_latest.pth')
     
     # Scheduler parameters
     parser.add_argument('--scheduler', type=str, default='cosine',
