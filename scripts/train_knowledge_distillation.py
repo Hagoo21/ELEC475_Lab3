@@ -242,6 +242,7 @@ class TeacherModelWrapper(nn.Module):
                 - logits: [B, num_classes, H, W]
                 - features: {'low': [...], 'mid': [...], 'high': [...]}
         """
+        input_shape = x.shape[-2:]  # Capture original input size [H, W]
         features_dict = {}
         
         # ResNet backbone feature extraction
@@ -268,8 +269,8 @@ class TeacherModelWrapper(nn.Module):
         # FCN classifier head
         x = self.model.classifier(x)
         
-        # Upsample to input resolution
-        logits = F.interpolate(x, size=x.shape[-2:], mode='bilinear', 
+        # Upsample to input resolution (not x.shape, but original input_shape!)
+        logits = F.interpolate(x, size=input_shape, mode='bilinear', 
                               align_corners=False)
         
         return logits, features_dict
