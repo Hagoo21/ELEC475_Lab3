@@ -150,7 +150,7 @@ All requirements have been fully implemented with comprehensive documentation, t
    - Quick reference
 
 ### Testing & Examples
-6. **`test_knowledge_distillation.py`** (570 lines)
+6. **`scripts/test_knowledge_distillation.py`** (570 lines)
    - 8 comprehensive tests:
      1. Model initialization
      2. Forward pass
@@ -162,7 +162,7 @@ All requirements have been fully implemented with comprehensive documentation, t
      8. Cosine similarity
    - Validates correctness of entire pipeline
 
-7. **`example_kd_usage.py`** (346 lines)
+7. **`scripts/example_kd_usage.py`** (346 lines)
    - 4 minimal examples demonstrating:
      1. Response-based distillation
      2. Feature-based distillation
@@ -176,7 +176,7 @@ All requirements have been fully implemented with comprehensive documentation, t
 
 ### Step 1: Verify Implementation
 ```bash
-python test_knowledge_distillation.py
+python scripts/test_knowledge_distillation.py
 ```
 
 **Expected Output:**
@@ -200,7 +200,7 @@ TEST 1: Model Initialization
 
 ### Step 2: Run Training
 ```bash
-python train_knowledge_distillation.py
+python scripts/train_knowledge_distillation.py
 ```
 
 **Training Time:** ~3-5 hours (30 epochs, GTX 1080 Ti, batch_size=8)
@@ -351,7 +351,7 @@ Input Image [3, 512, 512]
 Ensure you're running from project root:
 ```bash
 cd ELEC475_Lab3
-python train_knowledge_distillation.py
+python scripts/train_knowledge_distillation.py
 ```
 
 ### Issue: Out of Memory
@@ -393,9 +393,9 @@ DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
 - `KD_IMPLEMENTATION_SUMMARY.md` - This file
 
 ### Code Files
-- `train_knowledge_distillation.py` - Main implementation
-- `test_knowledge_distillation.py` - Test suite
-- `example_kd_usage.py` - Educational examples
+- `scripts/train_knowledge_distillation.py` - Main implementation
+- `scripts/test_knowledge_distillation.py` - Test suite
+- `scripts/example_kd_usage.py` - Educational examples
 - `utils/distillation_utils.py` - Evaluation utilities
 
 ### Key Concepts

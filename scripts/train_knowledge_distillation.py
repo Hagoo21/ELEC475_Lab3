@@ -45,9 +45,13 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.models.segmentation import fcn_resnet50, FCN_ResNet50_Weights
 import os
+import sys
 import time
 from tqdm import tqdm
 import numpy as np
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.lightweight_segmentation import LightweightSegmentationModel
 from utils.dataset import VOCSegmentationWithJointTransform

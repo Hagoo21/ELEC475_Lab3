@@ -7,7 +7,7 @@
 First, verify everything works:
 
 ```bash
-python test_knowledge_distillation.py
+python scripts/test_knowledge_distillation.py
 ```
 
 This will run 8 comprehensive tests to ensure:
@@ -23,7 +23,7 @@ This will run 8 comprehensive tests to ensure:
 ### 2. Train with Knowledge Distillation
 
 ```bash
-python train_knowledge_distillation.py
+python scripts/train_knowledge_distillation.py
 ```
 
 Expected output:
@@ -74,7 +74,7 @@ Compression Ratio                 12.56x
 
 ### Files Created
 
-1. **`train_knowledge_distillation.py`** - Main training script
+1. **`scripts/train_knowledge_distillation.py`** - Main training script
    - Complete KD pipeline with response-based and feature-based distillation
    - Configurable hyperparameters (α, β, γ, T)
    - Full training loop with evaluation
@@ -402,15 +402,17 @@ kd_loss = compute_kd_loss(student_logits, avg_teacher_logits)
 ```
 ELEC475_Lab3/
 ├── models/
-│   └── lightweight_segmentation.py       # Student model
+│   └── lightweight_segmentation.py          # Student model
 ├── utils/
-│   ├── dataset.py                        # Data loading
-│   └── distillation_utils.py            # Evaluation utilities
-├── train_knowledge_distillation.py        # Main training script
-├── test_knowledge_distillation.py         # Test suite
-├── config.py                             # Configuration
-├── KNOWLEDGE_DISTILLATION_GUIDE.md       # Detailed guide
-└── KNOWLEDGE_DISTILLATION_README.md      # This file
+│   ├── dataset.py                           # Data loading
+│   └── distillation_utils.py               # Evaluation utilities
+├── scripts/
+│   ├── train_knowledge_distillation.py     # Main training script
+│   ├── test_knowledge_distillation.py      # Test suite
+│   └── example_kd_usage.py                 # Educational examples
+├── config.py                                # Configuration
+├── KNOWLEDGE_DISTILLATION_GUIDE.md          # Detailed guide
+└── KNOWLEDGE_DISTILLATION_README.md         # This file
 ```
 
 ## Summary

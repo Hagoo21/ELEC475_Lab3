@@ -17,9 +17,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.lightweight_segmentation import LightweightSegmentationModel
-from train_knowledge_distillation import (
+from scripts.train_knowledge_distillation import (
     KnowledgeDistillationLoss, 
     TeacherModelWrapper
 )
@@ -404,7 +409,7 @@ def run_all_tests():
         print("╚" + "=" * 78 + "╝")
         print()
         print("✓ Knowledge distillation pipeline is working correctly!")
-        print("✓ You can now run: python train_knowledge_distillation.py")
+        print("✓ You can now run: python scripts/train_knowledge_distillation.py")
         print()
         
     except AssertionError as e:

@@ -135,7 +135,7 @@ Teacher is wrapped in `@torch.no_grad()` and `requires_grad=False`:
 ### Basic Training
 
 ```bash
-python train_knowledge_distillation.py
+python scripts/train_knowledge_distillation.py
 ```
 
 ### Configuration
