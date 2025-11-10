@@ -497,6 +497,25 @@ def main():
         return_features=True  # Enable feature extraction for distillation
     ).to(device)
     
+    # Load pre-trained student checkpoint (your already-trained model)
+    # Find the checkpoint file ending with "_best.pth"
+    pretrained_checkpoint = None
+    if os.path.exists(config.CHECKPOINT_DIR):
+        for filename in os.listdir(config.CHECKPOINT_DIR):
+            if filename.endswith('_best.pth'):
+                pretrained_checkpoint = os.path.join(config.CHECKPOINT_DIR, filename)
+                break
+    
+    if pretrained_checkpoint and os.path.exists(pretrained_checkpoint):
+        print(f"Loading pre-trained student checkpoint: {pretrained_checkpoint}")
+        checkpoint = torch.load(pretrained_checkpoint, map_location=device)
+        student.load_state_dict(checkpoint['model_state_dict'])
+        print(f"✓ Loaded checkpoint from epoch {checkpoint.get('epoch', 'unknown')}, "
+              f"mIoU: {checkpoint.get('best_miou', checkpoint.get('miou', 'unknown')):.4f}")
+    else:
+        print(f"WARNING: No checkpoint ending with '_best.pth' found in {config.CHECKPOINT_DIR}")
+        print("Starting from ImageNet-pretrained backbone only (random decoder)")
+    
     # Teacher model (frozen)
     teacher = TeacherModelWrapper(num_classes=NUM_CLASSES).to(device)
     
