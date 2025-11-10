@@ -472,7 +472,7 @@ def main():
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
-        num_workers=4,
+        num_workers=0,  # Set to 0 for Windows compatibility (avoids pickle issues)
         pin_memory=True
     )
     
@@ -480,7 +480,7 @@ def main():
         val_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=4,
+        num_workers=0,  # Set to 0 for Windows compatibility (avoids pickle issues)
         pin_memory=True
     )
     
