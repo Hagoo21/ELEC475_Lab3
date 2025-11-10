@@ -7,7 +7,14 @@ This script loads the training history and creates plots for:
 - Validation Pixel Accuracy
 
 Usage:
-    python visualize_training.py
+    # Visualize standard model (default)
+    python scripts/visualize_training.py
+    
+    # Visualize optimized model
+    python scripts/visualize_training.py --checkpoint_dir checkpoints_optimized
+    
+    # Custom output directory
+    python scripts/visualize_training.py --checkpoint_dir checkpoints_optimized --output_dir my_plots
 """
 
 import sys
@@ -170,13 +177,26 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
 
 
 if __name__ == '__main__':
-    # Check if checkpoint_latest.pth exists (adjust path for scripts folder)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    history_path = os.path.join(script_dir, '..', 'checkpoints', 'checkpoint_latest.pth')
+    import argparse
     
-    if not os.path.exists(history_path):
-        print(f"Error: Checkpoint file not found at {history_path}")
-        print("Please run training first to generate the checkpoint file.")
+    parser = argparse.ArgumentParser(description='Visualize training metrics from checkpoint')
+    parser.add_argument('--checkpoint_dir', type=str, default='checkpoints',
+                       help='Directory containing checkpoints (default: checkpoints)')
+    parser.add_argument('--output_dir', type=str, default='scripts/visualizations',
+                       help='Directory to save visualization plots (default: scripts/visualizations)')
+    
+    args = parser.parse_args()
+    
+    # Check if checkpoint directory exists
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    checkpoint_path = os.path.join(script_dir, '..', args.checkpoint_dir)
+    
+    if not os.path.exists(checkpoint_path):
+        print(f"Error: Checkpoint directory not found at {checkpoint_path}")
+        print("Please run training first to generate checkpoints.")
+        print("\nUsage examples:")
+        print("  python scripts/visualize_training.py")
+        print("  python scripts/visualize_training.py --checkpoint_dir checkpoints_optimized")
     else:
-        plot_training_history(history_path)
+        plot_training_history(checkpoint_path, args.output_dir)
 
