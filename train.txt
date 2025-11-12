@@ -6,5 +6,7 @@ python scripts/train_optimized.py --epochs 50 --batch_size 8 --lr 1e-4 --num_wor
 # Step 2: Apply knowledge distillation
 python scripts/train_knowledge_distillation.py --method response --epochs 30 
 
-
+# Step 3: Visualize results
+python scripts/visualize_training.py
+python scripts/visualize_kd_training.py --method response
 
