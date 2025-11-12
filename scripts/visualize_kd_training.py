@@ -282,6 +282,133 @@ def plot_kd_training_history(history_path='checkpoints/kd_training_history.pth',
     print(f"{'='*80}\n")
 
 
+def plot_response_based_loss_curves(history_path='checkpoints/kd_training_history_response.pth', 
+                                    output_dir='visualizations'):
+    """
+    Create a loss curve visualization similar to visualize_training.py format,
+    specifically for response-based knowledge distillation.
+    
+    This shows Total Loss, CE Loss, and KD Loss in the same style as the standard
+    training loss plots.
+    
+    Args:
+        history_path: Path to the response-based KD training history file
+        output_dir: Directory to save plots
+    """
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Load training history
+    print(f"Loading response-based KD training history from: {history_path}")
+    if not os.path.exists(history_path):
+        print(f"Error: History file not found at {history_path}")
+        print("\nMake sure you've run the response-based distillation training first:")
+        print("  python scripts/train_knowledge_distillation.py --method response")
+        return
+    
+    checkpoint = torch.load(history_path, weights_only=False, map_location=torch.device('cpu'))
+    
+    if 'history' not in checkpoint:
+        print(f"Error: Invalid history file format")
+        return
+    
+    history = checkpoint['history']
+    distillation_params = checkpoint.get('distillation_params', {})
+    baseline_miou = checkpoint.get('baseline_miou', None)
+    best_miou = checkpoint.get('best_miou', None)
+    
+    # Extract metrics from history
+    epochs = [entry['epoch'] for entry in history]
+    total_loss = [entry['train_losses']['total_loss'] for entry in history]
+    ce_loss = [entry['train_losses']['ce_loss'] for entry in history]
+    kd_loss = [entry['train_losses']['kd_loss'] for entry in history]
+    
+    print(f"\nLoaded {len(epochs)} epochs of training data")
+    
+    # ===== Create detailed loss plot (matching visualize_training.py style) =====
+    fig, ax = plt.subplots(figsize=(12, 7))
+    
+    # Plot Total Loss with blue line and circle markers
+    ax.plot(epochs, total_loss, 'b-', label='Total Loss (α·CE + β·KD)', linewidth=2.5, 
+            marker='o', markersize=4, markevery=max(1, len(epochs)//20))
+    
+    # Plot CE Loss with red line and square markers
+    ax.plot(epochs, ce_loss, 'r-', label='CE Loss (Ground Truth)', linewidth=2, 
+            marker='s', markersize=4, markevery=max(1, len(epochs)//20), alpha=0.8)
+    
+    # Plot KD Loss with green line and triangle markers
+    ax.plot(epochs, kd_loss, 'g-', label='KD Loss (Teacher Distillation)', linewidth=2,
+            marker='^', markersize=4, markevery=max(1, len(epochs)//20), alpha=0.8)
+    
+    ax.set_xlabel('Epoch', fontsize=14)
+    ax.set_ylabel('Loss', fontsize=14)
+    ax.set_title('Response-Based Knowledge Distillation - Training Loss', 
+                 fontsize=16, fontweight='bold')
+    ax.legend(fontsize=12, loc='best')
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.set_xlim(epochs[0], epochs[-1])
+    
+    # Add text box with summary statistics
+    alpha_val = distillation_params.get('alpha', 'N/A')
+    beta_val = distillation_params.get('beta', 'N/A')
+    temp_val = distillation_params.get('temperature', 'N/A')
+    
+    textstr = f'Hyperparameters:\n'
+    textstr += f'  α (CE weight): {alpha_val}\n'
+    textstr += f'  β (KD weight): {beta_val}\n'
+    textstr += f'  T (temperature): {temp_val}\n\n'
+    textstr += f'Final Losses:\n'
+    textstr += f'  Total: {total_loss[-1]:.4f}\n'
+    textstr += f'  CE: {ce_loss[-1]:.4f}\n'
+    textstr += f'  KD: {kd_loss[-1]:.4f}\n\n'
+    textstr += f'Minimum Losses:\n'
+    textstr += f'  Total: {min(total_loss):.4f}\n'
+    textstr += f'  CE: {min(ce_loss):.4f}\n'
+    textstr += f'  KD: {min(kd_loss):.4f}'
+    
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.85)
+    ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=10,
+            verticalalignment='top', bbox=props)
+    
+    plt.tight_layout()
+    
+    # Save loss plot
+    loss_plot_path = os.path.join(output_dir, 'response_based_loss_curves.png')
+    plt.savefig(loss_plot_path, dpi=300, bbox_inches='tight')
+    print(f"✓ Response-based loss curves saved to: {loss_plot_path}")
+    
+    plt.show()
+    
+    # Print summary
+    print(f"\n{'='*80}")
+    print(f"Response-Based Knowledge Distillation - Training Summary")
+    print(f"{'='*80}")
+    print(f"Total Epochs: {len(epochs)}")
+    print(f"\nDistillation Parameters:")
+    print(f"  α (alpha):       {alpha_val}  - CE loss weight")
+    print(f"  β (beta):        {beta_val}  - KD loss weight")
+    print(f"  T (temperature): {temp_val}")
+    print(f"\nFinal Losses:")
+    print(f"  Total Loss: {total_loss[-1]:.4f}")
+    print(f"  CE Loss:    {ce_loss[-1]:.4f}")
+    print(f"  KD Loss:    {kd_loss[-1]:.4f}")
+    print(f"\nMinimum Losses:")
+    print(f"  Total Loss: {min(total_loss):.4f}  (Epoch {total_loss.index(min(total_loss)) + 1})")
+    print(f"  CE Loss:    {min(ce_loss):.4f}  (Epoch {ce_loss.index(min(ce_loss)) + 1})")
+    print(f"  KD Loss:    {min(kd_loss):.4f}  (Epoch {kd_loss.index(min(kd_loss)) + 1})")
+    
+    if baseline_miou:
+        print(f"\nBaseline mIoU (no KD): {baseline_miou:.4f}")
+    if best_miou:
+        print(f"Best mIoU (with KD):   {best_miou:.4f}")
+        if baseline_miou:
+            improvement = best_miou - baseline_miou
+            improvement_pct = 100 * improvement / baseline_miou
+            print(f"Improvement:           {improvement:+.4f} ({improvement_pct:+.2f}%)")
+    
+    print(f"{'='*80}\n")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Visualize Knowledge Distillation training history')
     parser.add_argument('--history', type=str, 
@@ -294,6 +421,10 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=str, 
                        default='visualizations',
                        help='Directory to save visualization plots')
+    parser.add_argument('--plot-type', type=str,
+                       choices=['all', 'loss-only'],
+                       default='all',
+                       help='Type of plots to generate: "all" (default) or "loss-only" (response-based loss curves)')
     
     args = parser.parse_args()
     
@@ -314,5 +445,9 @@ if __name__ == '__main__':
     if not os.path.isabs(args.output):
         args.output = os.path.join(script_dir, '', args.output)
     
-    plot_kd_training_history(args.history, args.output)
+    # Call appropriate visualization function based on plot type
+    if args.plot_type == 'loss-only':
+        plot_response_based_loss_curves(args.history, args.output)
+    else:
+        plot_kd_training_history(args.history, args.output)
 
