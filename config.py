@@ -1,33 +1,14 @@
-r"""
-Simple Path Configuration
-==========================
-
-SETUP FOR YOUR OTHER COMPUTER:
-1. Edit DATA_ROOT below (line 22) to point to your dataset
-2. Run: python config.py (to test)
-3. Run: python train.py (to train)
-
-COMMON PATHS:
-  Standard:           DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
-  Absolute (Windows): DATA_ROOT = r'C:\Users\20sr91\ELEC475_Lab3\data\VOC2012_train_val\VOC2012_train_val'
-  Absolute (Linux):   DATA_ROOT = '/home/username/ELEC475_Lab3/data/VOC2012_train_val/VOC2012_train_val'
-
-That's it!
-"""
-
 import os
 
 # =============================================================================
 # EDIT THIS LINE FOR YOUR COMPUTER
 # =============================================================================
 
-# Where is your VOC2012 dataset? Update this path:
+# Put your absolute path to the VOC2012_train_val folder here:
 DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
 
-# Examples for different computers:
-# DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'  # Standard
-# DATA_ROOT = './data/VOC2012_train_val'                     # One level up
-# DATA_ROOT = r'C:\Users\20sr91\ELEC475_Lab3\data\VOC2012_train_val\VOC2012_train_val'  # Absolute path
+
+
 
 # =============================================================================
 # Other paths (you probably don't need to change these)
@@ -40,10 +21,6 @@ TEST_DATA_ROOT = './data/VOC2012_test/VOC2012_test'
 # Create directories if they don't exist
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
-
-# =============================================================================
-# Validation
-# =============================================================================
 
 def validate_paths():
     """Check if DATA_ROOT is correct."""
