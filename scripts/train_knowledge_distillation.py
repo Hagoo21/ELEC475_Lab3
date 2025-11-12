@@ -49,6 +49,7 @@ import sys
 import time
 from tqdm import tqdm
 import numpy as np
+import argparse
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -413,10 +414,29 @@ def evaluate(model, dataloader, device, num_classes=21):
     return miou
 
 
-def main():
+def main(args=None):
     """
     Main training pipeline for knowledge distillation.
+    
+    Args:
+        args: Command-line arguments (if None, will parse from sys.argv)
     """
+    # Parse arguments
+    if args is None:
+        parser = argparse.ArgumentParser(description='Knowledge Distillation Training')
+        parser.add_argument('--method', type=str, default='both',
+                          choices=['response', 'feature', 'both'],
+                          help='Distillation method: response-based, feature-based, or both')
+        parser.add_argument('--batch_size', type=int, default=8,
+                          help='Batch size for training')
+        parser.add_argument('--epochs', type=int, default=30,
+                          help='Number of training epochs')
+        parser.add_argument('--lr', type=float, default=1e-3,
+                          help='Learning rate')
+        parser.add_argument('--temperature', type=float, default=4.0,
+                          help='Temperature for response-based distillation')
+        args = parser.parse_args()
+    
     # ===== Configuration =====
     print("=" * 80)
     print("Knowledge Distillation Training Pipeline")
@@ -424,17 +444,34 @@ def main():
     
     # Hyperparameters
     NUM_CLASSES = 21
-    BATCH_SIZE = 8
-    NUM_EPOCHS = 30
-    LEARNING_RATE = 1e-3
+    BATCH_SIZE = args.batch_size
+    NUM_EPOCHS = args.epochs
+    LEARNING_RATE = args.lr
     WEIGHT_DECAY = 1e-4
     
-    # Knowledge distillation parameters
-    ALPHA = 1.0    # Weight for cross-entropy loss
-    BETA = 0.5     # Weight for KL divergence loss
-    GAMMA = 0.3    # Weight for feature cosine loss
-    TEMPERATURE = 4.0  # Softening temperature
+    # Knowledge distillation parameters based on selected method
+    ALPHA = 1.0    # Weight for cross-entropy loss (always used)
     
+    # Set beta and gamma based on method
+    if args.method == 'response':
+        BETA = 0.7      # Response-based only (higher weight)
+        GAMMA = 0.0     # No feature-based
+        method_name = "Response-Based"
+        checkpoint_suffix = "response"
+    elif args.method == 'feature':
+        BETA = 0.0      # No response-based
+        GAMMA = 0.5     # Feature-based only (higher weight)
+        method_name = "Feature-Based"
+        checkpoint_suffix = "feature"
+    else:  # both
+        BETA = 0.5      # Both methods
+        GAMMA = 0.3
+        method_name = "Response + Feature-Based"
+        checkpoint_suffix = "both"
+    
+    TEMPERATURE = args.temperature
+    
+    print(f"\nDistillation Method: {method_name}")
     print(f"\nHyperparameters:")
     print(f"  Batch size: {BATCH_SIZE}")
     print(f"  Epochs: {NUM_EPOCHS}")
@@ -442,8 +479,8 @@ def main():
     print(f"  Weight decay: {WEIGHT_DECAY}")
     print(f"\nDistillation parameters:")
     print(f"  α (CE weight): {ALPHA}")
-    print(f"  β (KD weight): {BETA}")
-    print(f"  γ (Feature weight): {GAMMA}")
+    print(f"  β (KD weight): {BETA}  {'[DISABLED]' if BETA == 0 else '[ENABLED]'}")
+    print(f"  γ (Feature weight): {GAMMA}  {'[DISABLED]' if GAMMA == 0 else '[ENABLED]'}")
     print(f"  T (Temperature): {TEMPERATURE}")
     print("=" * 80)
     
@@ -606,13 +643,14 @@ def main():
         if val_miou > best_miou:
             best_miou = val_miou
             checkpoint_path = os.path.join(config.CHECKPOINT_DIR, 
-                                          'student_kd_best.pth')
+                                          f'student_kd_{checkpoint_suffix}_best.pth')
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': student.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'miou': val_miou,
                 'baseline_miou': baseline_miou,
+                'method': args.method,
                 'distillation_params': {
                     'alpha': ALPHA,
                     'beta': BETA,
@@ -629,6 +667,21 @@ def main():
             'val_miou': val_miou,
             'lr': current_lr
         })
+        
+        # Save training history checkpoint
+        history_path = os.path.join(config.CHECKPOINT_DIR, f'kd_training_history_{checkpoint_suffix}.pth')
+        torch.save({
+            'history': training_history,
+            'method': args.method,
+            'distillation_params': {
+                'alpha': ALPHA,
+                'beta': BETA,
+                'gamma': GAMMA,
+                'temperature': TEMPERATURE
+            },
+            'baseline_miou': baseline_miou,
+            'best_miou': best_miou
+        }, history_path)
     
     # ===== Final Evaluation =====
     print("\n" + "=" * 80)
@@ -648,7 +701,8 @@ def main():
     print(f"{'Compression Ratio':<30} {teacher_params/student_params:.2f}x")
     
     print("\n" + "=" * 80)
-    print(f"Best model saved to: {config.CHECKPOINT_DIR}/student_kd_best.pth")
+    print(f"Best model saved to: {config.CHECKPOINT_DIR}/student_kd_{checkpoint_suffix}_best.pth")
+    print(f"Training history saved to: {config.CHECKPOINT_DIR}/kd_training_history_{checkpoint_suffix}.pth")
     print("=" * 80)
     
     return training_history

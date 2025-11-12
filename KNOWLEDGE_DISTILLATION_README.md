@@ -293,6 +293,131 @@ with torch.no_grad():
 # prediction is [H, W] with class indices 0-20
 ```
 
+## Visualizing Training Progress
+
+After training completes, you can visualize the loss curves and validation metrics:
+
+### Quick Visualization
+
+```bash
+python scripts/visualize_kd_training.py
+```
+
+This will generate 4 comprehensive plots:
+
+1. **Loss Components** (`kd_loss_components.png`)
+   - Total Loss (combined)
+   - Cross-Entropy Loss (ground truth supervision)
+   - KL Divergence Loss (response-based distillation)
+   - Feature Cosine Loss (feature-based distillation)
+
+2. **Validation mIoU** (`kd_validation_miou.png`)
+   - Validation mIoU over epochs
+   - Baseline comparison (student without KD)
+   - Best model marker with improvement percentage
+
+3. **Combined Loss Comparison** (`kd_all_losses.png`)
+   - All loss components on same plot
+   - Shows relationship between different losses
+   - Displays loss formula: L_total = α·L_CE + β·L_KD + γ·L_feat
+
+4. **Learning Rate Schedule** (`kd_learning_rate.png`)
+   - Learning rate decay over training
+   - Helps understand training dynamics
+
+### Custom Paths
+
+```bash
+# Specify custom history file and output directory
+python scripts/visualize_kd_training.py \
+    --history checkpoints_optimized/kd_training_history.pth \
+    --output my_visualizations
+```
+
+### Example Output
+
+```
+Loading KD training history from: checkpoints_optimized/kd_training_history.pth
+
+Loaded 30 epochs of training data
+
+================================================================================
+Knowledge Distillation Parameters:
+================================================================================
+  α (alpha):     1.0  - CE loss weight
+  β (beta):      0.5  - KD loss weight
+  γ (gamma):     0.3  - Feature loss weight
+  T (temperature): 4.0
+
+================================================================================
+Training Summary:
+================================================================================
+  Baseline mIoU (no KD): 0.5834
+  Best mIoU (with KD):   0.6124
+  Improvement:           +0.0290 (+4.97%)
+
+  Final Total Loss: 0.2512
+  Final CE Loss:    0.2511
+  Final KD Loss:    0.1245
+  Final Feat Loss:  0.2198
+  Final Val mIoU:   0.6098
+================================================================================
+
+✓ Loss components plot saved to: visualizations/kd_loss_components.png
+✓ Validation mIoU plot saved to: visualizations/kd_validation_miou.png
+✓ Combined losses plot saved to: visualizations/kd_all_losses.png
+✓ Learning rate plot saved to: visualizations/kd_learning_rate.png
+
+================================================================================
+All plots saved to: visualizations/
+================================================================================
+```
+
+### Understanding the Plots
+
+**What to Look For:**
+
+1. **All losses should decrease over time**
+   - If a loss increases: adjust corresponding weight (α, β, or γ)
+   - Sudden spikes: might indicate learning rate too high
+
+2. **Validation mIoU should increase**
+   - Should improve beyond baseline (without KD)
+   - Plateaus indicate convergence or need for longer training
+
+3. **Loss relationships**
+   - KD loss typically smaller than CE loss (due to β < α)
+   - Feature loss range [0, 2], typically 0.2-0.5 for good training
+   - All losses should trend downward together
+
+4. **Learning rate schedule**
+   - Should decay smoothly (using StepLR or CosineAnnealingLR)
+   - Sharp changes indicate learning rate scheduler steps
+
+### Troubleshooting
+
+**Issue: No history file found**
+
+If you see:
+```
+Error: History file not found at checkpoints_optimized/kd_training_history.pth
+```
+
+**Solution:** The history file is only created after you run the updated training script. If you trained before adding visualization support, you need to re-run training:
+
+```bash
+python scripts/train_knowledge_distillation.py
+```
+
+The training script now automatically saves history after each epoch to `checkpoints_optimized/kd_training_history.pth`.
+
+**Issue: Plots don't show up**
+
+**Solution:** The script uses `plt.show()` which requires a display. If running on a headless server:
+- Plots are still saved to the `visualizations/` directory
+- You can view the PNG files directly
+- Or disable `plt.show()` in the script
+
 ## Troubleshooting
 
 ### Issue: Low mIoU (<50%)

@@ -33,7 +33,7 @@ DATA_ROOT = './data/VOC2012_train_val/VOC2012_train_val'
 # Other paths (you probably don't need to change these)
 # =============================================================================
 
-CHECKPOINT_DIR = './checkpoints'
+CHECKPOINT_DIR = './checkpoints_optimized'
 LOG_DIR = './logs'
 TEST_DATA_ROOT = './data/VOC2012_test/VOC2012_test'
 
