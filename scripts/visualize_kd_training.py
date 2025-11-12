@@ -285,8 +285,8 @@ def plot_kd_training_history(history_path='checkpoints/kd_training_history.pth',
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Visualize Knowledge Distillation training history')
     parser.add_argument('--history', type=str, 
-                       default=None,
-                       help='Path to the KD training history file')
+                       default='checkpoints_optimized/kd_training_history_response.pth',
+                       help='Path to the KD training history file (default: kd_training_history_response.pth)')
     parser.add_argument('--method', type=str,
                        choices=['response', 'feature', 'both'],
                        default=None,
@@ -300,14 +300,10 @@ if __name__ == '__main__':
     # Adjust path if running from scripts directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Auto-detect history file based on method
-    if args.history is None:
-        if args.method:
-            args.history = f'checkpoints_optimized/kd_training_history_{args.method}.pth'
-        else:
-            # Default to response method
-            args.history = 'checkpoints_optimized/kd_training_history_response.pth'
-            print(f"No method specified, defaulting to: {args.history}")
+    # Auto-detect history file based on method (overrides default if specified)
+    if args.method:
+        args.history = f'checkpoints_optimized/kd_training_history_{args.method}.pth'
+        print(f"Using method '{args.method}': {args.history}")
     
     if not os.path.isabs(args.history):
         args.history = os.path.join(script_dir, '..', args.history)
