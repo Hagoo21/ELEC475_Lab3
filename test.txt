@@ -1,0 +1,11 @@
+# ELEC475 Lab 3 - Testing/Evaluation Script
+
+# Step 1: Evaluate baseline model
+python scripts/test_model.py --checkpoint ./checkpoints_optimized/checkpoint_epoch_50_best.pth --output_dir ./results/baseline --batch_size 8 --visualize --save_masks
+
+# Step 2: Evaluate KD model
+python scripts/test_model.py --checkpoint ./checkpoints_optimized/student_kd_response_best.pth --output_dir ./results/kd_response --batch_size 8 --visualize --save_masks
+
+# Step 3: Generate qualitative results
+python scripts/evaluate_qualitative_results.py --checkpoint ./checkpoints_optimized/student_kd_response_best.pth --output_dir ./results/qualitative --num_samples 20
+
