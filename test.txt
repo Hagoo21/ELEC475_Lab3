@@ -1,8 +1,7 @@
 # ELEC475 Lab 3 - Qualitative Evaluation Script
 
 # Step 1: Generate qualitative results for baseline model
-python scripts/evaluate_qualitative_results.py --checkpoint .scripts/checkpoints_optimized/checkpoint_epoch_94_best.pth --output_dir ./qualitative_results/baseline --batch_size 8
+python scripts/evaluate_qualitative_results.py --checkpoint ./scripts/checkpoints_optimized/checkpoint_epoch_94_best.pth --output_dir ./qualitative_results/baseline --batch_size 8
 
 # Step 2: Generate qualitative results for response-based distillation model
-python scripts/evaluate_qualitative_results.py --checkpoint .scripts/checkpoints_optimized/student_kd_response_best.pth --output_dir ./qualitative_results/kd_response --batch_size 8
-
+python scripts/evaluate_qualitative_results.py --checkpoint ./scripts/checkpoints_optimized/student_kd_response_best.pth --output_dir ./qualitative_results/kd_response --batch_size 8
