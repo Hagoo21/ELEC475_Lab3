@@ -18,15 +18,20 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.common import load_training_history, find_best_epoch
+import config
 
-def plot_training_history(history_path='checkpoints/training_history.pth', output_dir='visualizations'):
+def plot_training_history(history_path=None, output_dir='visualizations'):
     """
     Load and plot training history.
     
     Args:
-        history_path: Path to the training history file or checkpoint directory
+        history_path: Path to the training history file or checkpoint directory (defaults to config.CHECKPOINT_DIR)
         output_dir: Directory to save plots
     """
+    # Use checkpoint directory from config if no path provided
+    if history_path is None:
+        history_path = os.path.join(config.CHECKPOINT_DIR, 'checkpoint_latest.pth')
+    
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
@@ -47,7 +52,7 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
                 history = checkpoint
         else:
             # Try treating parent directory as checkpoint dir
-            checkpoint_dir = os.path.dirname(history_path) or 'checkpoints'
+            checkpoint_dir = os.path.dirname(history_path) or config.CHECKPOINT_DIR
             history = load_training_history(checkpoint_dir)
     
     if history is None:
@@ -170,12 +175,12 @@ def plot_training_history(history_path='checkpoints/training_history.pth', outpu
 
 
 if __name__ == '__main__':
-    # Check if checkpoint_latest.pth exists (adjust path for scripts folder)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    history_path = os.path.join(script_dir, '..', 'checkpoints', 'checkpoint_latest.pth')
+    # Use checkpoint directory from config
+    history_path = os.path.join(config.CHECKPOINT_DIR, 'checkpoint_latest.pth')
     
     if not os.path.exists(history_path):
         print(f"Error: Checkpoint file not found at {history_path}")
+        print(f"(Looking in checkpoint directory: {config.CHECKPOINT_DIR})")
         print("Please run training first to generate the checkpoint file.")
     else:
         plot_training_history(history_path)
