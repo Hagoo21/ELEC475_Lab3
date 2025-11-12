@@ -192,12 +192,17 @@ def main():
     print("1. Evaluating Baseline (Without Knowledge Distillation)")
     print("=" * 80)
     
-    # Look for baseline checkpoint (not a KD checkpoint)
+    # Look for baseline checkpoint (not a KD checkpoint) in multiple locations
     baseline_checkpoint = None
-    if os.path.exists(config.CHECKPOINT_DIR):
-        for filename in os.listdir(config.CHECKPOINT_DIR):
-            if filename.endswith('_best.pth') and 'kd' not in filename.lower():
-                baseline_checkpoint = os.path.join(config.CHECKPOINT_DIR, filename)
+    possible_dirs = [config.CHECKPOINT_DIR, './checkpoints_optimized', './scripts/checkpoints_optimized']
+    
+    for checkpoint_dir in possible_dirs:
+        if os.path.exists(checkpoint_dir):
+            for filename in os.listdir(checkpoint_dir):
+                if filename.endswith('_best.pth') and 'kd' not in filename.lower():
+                    baseline_checkpoint = os.path.join(checkpoint_dir, filename)
+                    break
+            if baseline_checkpoint:
                 break
     
     if baseline_checkpoint and os.path.exists(baseline_checkpoint):
@@ -239,7 +244,16 @@ def main():
     print("2. Evaluating Response-Based Knowledge Distillation")
     print("=" * 80)
     
-    response_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_response_best.pth')
+    # Try multiple possible checkpoint directories
+    response_checkpoint = None
+    for checkpoint_dir in possible_dirs:
+        response_path = os.path.join(checkpoint_dir, 'student_kd_response_best.pth')
+        if os.path.exists(response_path):
+            response_checkpoint = response_path
+            break
+    
+    if not response_checkpoint:
+        response_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_response_best.pth')
     
     if os.path.exists(response_checkpoint):
         print(f"Loading response-based model: {response_checkpoint}")
@@ -277,7 +291,16 @@ def main():
     print("3. Evaluating Feature-Based Knowledge Distillation")
     print("=" * 80)
     
-    feature_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_feature_best.pth')
+    # Try multiple possible checkpoint directories
+    feature_checkpoint = None
+    for checkpoint_dir in possible_dirs:
+        feature_path = os.path.join(checkpoint_dir, 'student_kd_feature_best.pth')
+        if os.path.exists(feature_path):
+            feature_checkpoint = feature_path
+            break
+    
+    if not feature_checkpoint:
+        feature_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_feature_best.pth')
     
     if os.path.exists(feature_checkpoint):
         print(f"Loading feature-based model: {feature_checkpoint}")
@@ -311,7 +334,16 @@ def main():
         print("Run: python scripts/train_knowledge_distillation.py --method feature")
     
     # ===== Optional: Both Methods =====
-    both_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_both_best.pth')
+    both_checkpoint = None
+    for checkpoint_dir in possible_dirs:
+        both_path = os.path.join(checkpoint_dir, 'student_kd_both_best.pth')
+        if os.path.exists(both_path):
+            both_checkpoint = both_path
+            break
+    
+    if not both_checkpoint:
+        both_checkpoint = os.path.join(config.CHECKPOINT_DIR, 'student_kd_both_best.pth')
+    
     if os.path.exists(both_checkpoint):
         print("\n" + "=" * 80)
         print("4. Evaluating Combined (Response + Feature) Knowledge Distillation")
