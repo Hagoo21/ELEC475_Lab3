@@ -1,7 +1,7 @@
 # ELEC475 Lab 3 - Training Script
 
 # Step 1: Train baseline student model
-python scripts/train_optimized.py --loss_type focal --enhanced_aug --epochs 50 --batch_size 8 --lr 1e-4
+python scripts/train_optimized.py --loss_type focal --enhanced_aug --epochs 50 --batch_size 8 --lr 1e-4 --num_workers 0
 
 # Step 2: Apply knowledge distillation
 python scripts/train_knowledge_distillation.py --method response --epochs 30 --temperature 4.0 --batch_size 8 --lr 1e-3
